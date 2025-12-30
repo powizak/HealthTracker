@@ -1,5 +1,5 @@
 # HealthTracker
-Aplikace pro sledování zdravotních záznamů rodiny.
+Family health record tracking application.
 
 - **Backend:** Node.js (Express) with `google-auth-library` and `googleapis`
 - **Frontend:** React (Vite) with `react-router-dom` and `lucide-react`
@@ -18,7 +18,7 @@ Aplikace pro sledování zdravotních záznamů rodiny.
 - **Dashboard:**
     - Filter by family member or search text.
     - Visualization of active/past illnesses.
-- **Statistics:** overview of illness frequency.
+- **Statistics:** Overview of illness frequency.
 
 ## Getting Started
 
@@ -54,25 +54,23 @@ Aplikace pro sledování zdravotních záznamů rodiny.
    npm run dev
    ```
 
-## Jak spustit na Synology (Docker)
+## How to Run on Synology (Docker)
 
-1. Nahrajte celý projekt na Synology NAS.
-2. Vytvořte soubor `.env` ve stejné složce jako `docker-compose.yml` (nebo nastavte proměnné v prostředí Dockeru v Synology UI):
+1. Upload the entire project to your Synology NAS.
+2. Create a `.env` file in the same folder as `docker-compose.yml` (or set the variables in the Docker environment settings in Synology UI):
+   ```env
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   SESSION_SECRET=some_secret_string
    ```
-   GOOGLE_CLIENT_ID=vase_google_client_id
-   ```
-   GOOGLE_CLIENT_ID=vase_google_client_id
-   GOOGLE_CLIENT_SECRET=vase_google_client_secret
-   SESSION_SECRET=nejake_tajne_heslo
-   ```
-3. Otevřete **Container Manager** (nebo Docker) na Synology.
-4. V sekci **Project** (Projekt) vytvořte nový projekt, vyberte cestu k nahrané složce (kde je `docker-compose.yml`).
-5. Ujistěte se, že při spouštění/vytváření zvolíte možnost **"Build"** nebo **"Re-build"** (Sestavit znovu), aby se načetly změny (včetně `.dockerignore`).
-6. Aplikace poběží na portu **8081** vašeho NASu (např. `http://192.168.1.100:8081`).
+3. Open **Container Manager** (or Docker) on Synology.
+4. In the **Project** section, create a new project and select the path to the uploaded folder (where `docker-compose.yml` is located).
+5. Ensure you select **"Build"** or **"Re-build"** when running/creating the project to load changes (including `.dockerignore`).
+6. The application will run on port **8081** of your NAS (e.g., `http://192.168.1.100:8081`).
 
-**Poznámka:** Pokud aktualizujete soubory, je nejlepší starý projekt v Container Manageru zastavit, smazat a vytvořit znovu (nebo v akci zvolit "Build"), aby se vytvořily nové obrazy bez chyb.
+**Note:** If you update files, it is best to stop the old project in Container Manager, delete it, and create it again (or choose "Build" in the action menu) to ensure new images are built without errors.
 
-## Lokální Vývoj
+## Local Development
 
 ### Backend
 ```bash
@@ -88,5 +86,5 @@ npm install
 npm run dev
 ```
 
-## Účet Google
-Nezapomeňte přidat URL vašeho NASu (např. `http://192.168.1.100:8081`) do "Authorized JavaScript origins" a "Authorized redirect URIs" v Google Cloud Console, jinak nebude fungovat přihlášení!
+## Google Account
+Don't forget to add your NAS URL (e.g., `http://192.168.1.100:8081`) to "Authorized JavaScript origins" and "Authorized redirect URIs" in the Google Cloud Console, otherwise login will not work!
