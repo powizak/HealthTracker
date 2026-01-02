@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Plus, Trash2, Ruler } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Ruler, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Growth = () => {
@@ -12,6 +12,7 @@ const Growth = () => {
 
     // Form
     const [showForm, setShowForm] = useState(false);
+    const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         height: '',
@@ -47,21 +48,45 @@ const Growth = () => {
         }
     };
 
+    const handleEdit = (r) => {
+        setFormData({
+            date: r.date,
+            height: r.height || '',
+            weight: r.weight || '',
+            head_circumference: r.head_circumference || '',
+            notes: r.notes || ''
+        });
+        setEditingId(r.id);
+        setShowForm(true);
+    };
+
+    const handleCancel = () => {
+        setShowForm(false);
+        setEditingId(null);
+        setFormData({
+            date: new Date().toISOString().split('T')[0],
+            height: '',
+            weight: '',
+            head_circumference: '',
+            notes: ''
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/growth', {
-                ...formData,
-                member_id: selectedMember.id
-            }, { withCredentials: true });
-            setShowForm(false);
-            setFormData({
-                date: new Date().toISOString().split('T')[0],
-                height: '',
-                weight: '',
-                head_circumference: '',
-                notes: ''
-            });
+            if (editingId) {
+                // UPDATE
+                await axios.put(`/api/growth/${editingId}`, formData, { withCredentials: true });
+            } else {
+                // CREATE
+                await axios.post('/api/growth', {
+                    ...formData,
+                    member_id: selectedMember.id
+                }, { withCredentials: true });
+            }
+
+            handleCancel();
             loadRecords(selectedMember.id);
         } catch (err) {
             console.error(err);
@@ -109,7 +134,7 @@ const Growth = () => {
                         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                             <h2 className="font-semibold text-slate-800">Měření</h2>
                             <button
-                                onClick={() => setShowForm(!showForm)}
+                                onClick={showForm ? handleCancel : () => setShowForm(true)}
                                 className="text-sm bg-white border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 text-indigo-600 font-medium"
                             >
                                 {showForm ? 'Zavřít' : '+ Nové měření'}
@@ -118,6 +143,7 @@ const Growth = () => {
 
                         {showForm && (
                             <form onSubmit={handleSubmit} className="p-4 bg-indigo-50 border-b border-blue-100 space-y-3">
+                                <h3 className="text-sm font-bold text-indigo-900 mb-2">{editingId ? 'Upravit měření' : 'Nové měření'}</h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 uppercase">Datum</label>
@@ -163,7 +189,16 @@ const Growth = () => {
                                         />
                                     </div>
                                 </div>
-                                <button className="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium shadow-sm hover:bg-indigo-700">Uložit</button>
+                                <div className="flex space-x-2">
+                                    <button className="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-medium shadow-sm hover:bg-indigo-700">
+                                        {editingId ? 'Aktualizovat' : 'Uložit'}
+                                    </button>
+                                    {editingId && (
+                                        <button type="button" onClick={handleCancel} className="bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50">
+                                            Zrušit
+                                        </button>
+                                    )}
+                                </div>
                             </form>
                         )}
 
@@ -175,7 +210,7 @@ const Growth = () => {
                                         <th className="p-3">Výška</th>
                                         <th className="p-3">Váha</th>
                                         <th className="p-3">Hlava</th>
-                                        <th className="p-3 w-10"></th>
+                                        <th className="p-3 w-20"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -185,8 +220,11 @@ const Growth = () => {
                                             <td className="p-3 font-medium text-slate-900">{r.height ? `${r.height} cm` : '-'}</td>
                                             <td className="p-3 font-medium text-slate-900">{r.weight ? `${r.weight} kg` : '-'}</td>
                                             <td className="p-3 text-slate-600">{r.head_circumference ? `${r.head_circumference} cm` : '-'}</td>
-                                            <td className="p-3">
-                                                <button onClick={() => handleDelete(r.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100">
+                                            <td className="p-3 flex space-x-1 opacity-0 group-hover:opacity-100">
+                                                <button onClick={() => handleEdit(r)} className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded">
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => handleDelete(r.id)} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </td>

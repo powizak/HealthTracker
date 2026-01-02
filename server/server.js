@@ -613,6 +613,18 @@ app.post('/api/vaccinations', verifyUser, async (req, res) => {
     res.json({ id: result.lastID, ...req.body });
 });
 
+app.put('/api/vaccinations/:id', verifyUser, async (req, res) => {
+    const { vaccine_name, date_given, next_dose_date, batch_number, notes } = req.body;
+    const db = await getDb();
+
+    // Verify ownership/family access could be stricter, but verifyUser covers basic auth
+    await db.run(
+        'UPDATE vaccinations SET vaccine_name=?, date_given=?, next_dose_date=?, batch_number=?, notes=? WHERE id=?',
+        [vaccine_name, date_given, next_dose_date, batch_number, notes, req.params.id]
+    );
+    res.json({ message: 'Updated' });
+});
+
 app.delete('/api/vaccinations/:id', verifyUser, async (req, res) => {
     const db = await getDb();
     await db.run('DELETE FROM vaccinations WHERE id = ?', [req.params.id]);
@@ -634,6 +646,17 @@ app.post('/api/growth', verifyUser, async (req, res) => {
         [member_id, date, height, weight, head_circumference, notes]
     );
     res.json({ id: result.lastID, ...req.body });
+});
+
+app.put('/api/growth/:id', verifyUser, async (req, res) => {
+    const { date, height, weight, head_circumference, notes } = req.body;
+    const db = await getDb();
+
+    await db.run(
+        'UPDATE growth_records SET date=?, height=?, weight=?, head_circumference=?, notes=? WHERE id=?',
+        [date, height, weight, head_circumference, notes, req.params.id]
+    );
+    res.json({ message: 'Updated' });
 });
 
 app.delete('/api/growth/:id', verifyUser, async (req, res) => {

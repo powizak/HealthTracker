@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Plus, Trash2, Syringe } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Syringe, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Vaccinations = () => {
@@ -12,6 +12,7 @@ const Vaccinations = () => {
 
     // Form State
     const [showForm, setShowForm] = useState(false);
+    const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         vaccine_name: '',
         date_given: new Date().toISOString().split('T')[0],
@@ -54,21 +55,45 @@ const Vaccinations = () => {
         }
     }
 
+    const handleEdit = (v) => {
+        setFormData({
+            vaccine_name: v.vaccine_name,
+            date_given: v.date_given,
+            next_dose_date: v.next_dose_date || '',
+            batch_number: v.batch_number || '',
+            notes: v.notes || ''
+        });
+        setEditingId(v.id);
+        setShowForm(true);
+    };
+
+    const handleCancel = () => {
+        setShowForm(false);
+        setEditingId(null);
+        setFormData({
+            vaccine_name: '',
+            date_given: new Date().toISOString().split('T')[0],
+            next_dose_date: '',
+            batch_number: '',
+            notes: ''
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/vaccinations', {
-                ...formData,
-                member_id: selectedMember.id
-            }, { withCredentials: true });
-            setShowForm(false);
-            setFormData({
-                vaccine_name: '',
-                date_given: new Date().toISOString().split('T')[0],
-                next_dose_date: '',
-                batch_number: '',
-                notes: ''
-            });
+            if (editingId) {
+                // UPDATE
+                await axios.put(`/api/vaccinations/${editingId}`, formData, { withCredentials: true });
+            } else {
+                // CREATE
+                await axios.post('/api/vaccinations', {
+                    ...formData,
+                    member_id: selectedMember.id
+                }, { withCredentials: true });
+            }
+
+            handleCancel(); // Reset form
             loadVaccinations(selectedMember.id);
         } catch (err) {
             console.error(err);
@@ -108,7 +133,7 @@ const Vaccinations = () => {
                         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                             <h2 className="font-semibold text-slate-800">Seznam vakcín</h2>
                             <button
-                                onClick={() => setShowForm(!showForm)}
+                                onClick={showForm ? handleCancel : () => setShowForm(true)}
                                 className="text-sm bg-white border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 text-indigo-600 font-medium"
                             >
                                 {showForm ? 'Zavřít' : '+ Přidat'}
@@ -117,6 +142,7 @@ const Vaccinations = () => {
 
                         {showForm && (
                             <form onSubmit={handleSubmit} className="p-4 bg-indigo-50 border-b border-blue-100 space-y-3">
+                                <h3 className="text-sm font-bold text-indigo-900 mb-2">{editingId ? 'Upravit záznam' : 'Nový záznam'}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 uppercase">Název vakcíny</label>
@@ -166,7 +192,16 @@ const Vaccinations = () => {
                                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
                                     ></textarea>
                                 </div>
-                                <button className="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium shadow-sm hover:bg-indigo-700">Uložit záznam</button>
+                                <div className="flex space-x-2">
+                                    <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-medium shadow-sm hover:bg-indigo-700">
+                                        {editingId ? 'Aktualizovat' : 'Uložit záznam'}
+                                    </button>
+                                    {editingId && (
+                                        <button type="button" onClick={handleCancel} className="bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50">
+                                            Zrušit
+                                        </button>
+                                    )}
+                                </div>
                             </form>
                         )}
 
@@ -194,9 +229,14 @@ const Vaccinations = () => {
                                                 {v.batch_number && <span className="text-xs text-slate-400 uppercase tracking-widest mt-1 block">Šarže: {v.batch_number}</span>}
                                             </div>
                                         </div>
-                                        <button onClick={() => handleDelete(v.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
+                                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition">
+                                            <button onClick={() => handleEdit(v)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full">
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDelete(v.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))
                             )}
