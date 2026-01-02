@@ -88,3 +88,14 @@ npm run dev
 
 ## Google Account
 Don't forget to add your NAS URL (e.g., `http://192.168.1.100:8081`) to "Authorized JavaScript origins" and "Authorized redirect URIs" in the Google Cloud Console, otherwise login will not work!
+
+## How to Update on Synology
+To update the application with new features (Family Sharing, Vaccinations, etc.):
+
+1. **Stop the Container**: Go to Synology Container Manager, select the project, and click **Stop**.
+2. **Update Files**: Upload the new/modified files to your NAS, overwriting the existing ones (specifically `server/`, `client/`, and `package.json` files).
+3. **Rebuild**:
+   - In Container Manager > Projects, select your project.
+   - Click **Action** > **Build**.
+   - **Important**: This ensures the new code is baked into the Docker image.
+4. **Start**: Once the build is complete, the project will start automatically. The database will migrate automatically on the first run.

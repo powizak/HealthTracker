@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Heart, LogOut, Calendar, Plus, Settings as SettingsIcon } from 'lucide-react';
+import { Heart, LogOut, Calendar, Plus, Settings as SettingsIcon, Syringe, Ruler } from 'lucide-react';
 import axios from 'axios';
 
 const Layout = ({ onLogout }) => {
@@ -25,6 +25,12 @@ const Layout = ({ onLogout }) => {
                         <span>HealthTracker</span>
                     </Link>
                     <div className="flex items-center space-x-2">
+                        <Link to="/vaccinations" className="text-slate-500 hover:text-indigo-600 hidden md:block" title="Očkování">
+                            <Syringe className="w-5 h-5" />
+                        </Link>
+                        <Link to="/growth" className="text-slate-500 hover:text-indigo-600 hidden md:block" title="Růst">
+                            <Ruler className="w-5 h-5" />
+                        </Link>
                         <Link to="/calendar" className="text-slate-500 hover:text-indigo-600 hidden md:block" title="Kalendář">
                             <Calendar className="w-5 h-5" />
                         </Link>
@@ -43,17 +49,25 @@ const Layout = ({ onLogout }) => {
             </main>
 
             <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 safe-bottom md:hidden">
-                <div className="flex justify-around items-center py-3">
-                    <Link to="/" className="p-2 text-slate-600 hover:text-indigo-600 flex flex-col items-center text-xs">
+                <div className="flex justify-between items-center px-4 py-3">
+                    <Link to="/" className="text-slate-600 hover:text-indigo-600 flex flex-col items-center text-xs">
                         <Heart className="w-6 h-6 mb-1" />
                         Doma
                     </Link>
-                    <Link to="/add" className="p-2 text-indigo-600 -mt-8 bg-white rounded-full shadow-lg border border-slate-100">
+                    <Link to="/vaccinations" className="text-slate-600 hover:text-indigo-600 flex flex-col items-center text-xs">
+                        <Syringe className="w-6 h-6 mb-1" />
+                        Očkování
+                    </Link>
+                    <Link to="/add" className="text-indigo-600 -mt-8 bg-white rounded-full shadow-lg border border-slate-100 p-1">
                         <div className="bg-indigo-600 text-white p-3 rounded-full">
                             <Plus className="w-6 h-6" />
                         </div>
                     </Link>
-                    <Link to="/calendar" className="p-2 text-slate-600 hover:text-indigo-600 flex flex-col items-center text-xs">
+                    <Link to="/growth" className="text-slate-600 hover:text-indigo-600 flex flex-col items-center text-xs">
+                        <Ruler className="w-6 h-6 mb-1" />
+                        Růst
+                    </Link>
+                    <Link to="/calendar" className="text-slate-600 hover:text-indigo-600 flex flex-col items-center text-xs">
                         <Calendar className="w-6 h-6 mb-1" />
                         Kalendář
                     </Link>

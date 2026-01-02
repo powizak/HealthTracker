@@ -61,6 +61,12 @@ if (!process.env.GOOGLE_CLIENT_SECRET) {
     console.error('Please add GOOGLE_CLIENT_SECRET=YOUR_SECRET to server/.env');
 }
 
+// Helpers
+async function getUserFamilyId(userId, db) {
+    const link = await db.get('SELECT family_id FROM family_users WHERE user_id = ?', [userId]);
+    return link ? link.family_id : null;
+}
+
 // Auth Middleware
 async function verifyUser(req, res, next) {
     if (!req.session.userId) {
@@ -113,6 +119,24 @@ app.post('/auth/login', async (req, res) => {
             await db.run('UPDATE users SET refresh_token = ? WHERE id = ?', [tokens.refresh_token, user.id]);
         }
 
+        // --- FAMILY LOGIC START ---
+        // Check for pending invites
+        const invites = await db.all('SELECT * FROM family_invites WHERE email = ?', [user.email]);
+        for (const invite of invites) {
+            await db.run('INSERT OR IGNORE INTO family_users (family_id, user_id, role) VALUES (?, ?, ?)', [invite.family_id, user.id, 'member']);
+            await db.run('DELETE FROM family_invites WHERE id = ?', [invite.id]);
+            console.log(`User ${user.email} joined family ${invite.family_id} via invite.`);
+        }
+
+        // Ensure user belongs to at least one family. If not, create their own.
+        const userFamilies = await db.all('SELECT * FROM family_users WHERE user_id = ?', [user.id]);
+        if (userFamilies.length === 0) {
+            const result = await db.run('INSERT INTO families (name, created_by) VALUES (?, ?)', [`Rodina - ${user.name}`, user.id]);
+            await db.run('INSERT INTO family_users (family_id, user_id, role) VALUES (?, ?, ?)', [result.lastID, user.id, 'admin']);
+            console.log(`Created new family for ${user.email}`);
+        }
+        // --- FAMILY LOGIC END ---
+
         req.session.userId = user.id;
         res.json({ user });
     } catch (error) {
@@ -161,19 +185,72 @@ app.put('/api/settings', verifyUser, async (req, res) => {
     res.json({ message: 'Settings updated' });
 });
 
+// --- FAMILY MANAGEMENT ROUTES ---
+app.get('/api/family', verifyUser, async (req, res) => {
+    const db = await getDb();
+    const familyId = await getUserFamilyId(req.session.userId, db);
+    if (!familyId) return res.status(404).json({ error: 'No family found' });
+
+    const family = await db.get('SELECT * FROM families WHERE id = ?', [familyId]);
+    const users = await db.all(`
+        SELECT u.id, u.name, u.email, u.picture, fu.role 
+        FROM users u 
+        JOIN family_users fu ON u.id = fu.user_id 
+        WHERE fu.family_id = ?`, [familyId]);
+    const invites = await db.all('SELECT * FROM family_invites WHERE family_id = ?', [familyId]);
+
+    res.json({ ...family, users, invites });
+});
+
+app.put('/api/family', verifyUser, async (req, res) => {
+    const { name } = req.body;
+    const db = await getDb();
+    const familyId = await getUserFamilyId(req.session.userId, db);
+
+    // Check permission (optional: only admin?)
+    await db.run('UPDATE families SET name = ? WHERE id = ?', [name, familyId]);
+    res.json({ message: 'Family updated' });
+});
+
+app.post('/api/family/invite', verifyUser, async (req, res) => {
+    const { email } = req.body;
+    const db = await getDb();
+    const familyId = await getUserFamilyId(req.session.userId, db);
+
+    // Check if user already in family
+    const existingUser = await db.get(`
+        SELECT u.id FROM users u 
+        JOIN family_users fu ON u.id = fu.user_id 
+        WHERE u.email = ? AND fu.family_id = ?`, [email, familyId]);
+
+    if (existingUser) return res.status(400).json({ error: 'Uživatel už je v rodině.' });
+
+    // Create Invite
+    const token = Math.random().toString(36).substring(7);
+    await db.run('INSERT INTO family_invites (family_id, email, token, invited_by) VALUES (?, ?, ?, ?)',
+        [familyId, email, token, req.session.userId]);
+
+    res.json({ message: 'Invite created', email });
+});
+
+
 // --- FAMILY MEMBER ROUTES ---
 app.get('/api/members', verifyUser, async (req, res) => {
     const db = await getDb();
-    const members = await db.all('SELECT * FROM family_members WHERE user_id = ?', [req.session.userId]);
+    const familyId = await getUserFamilyId(req.session.userId, db);
+    // Filter by Family ID
+    const members = await db.all('SELECT * FROM family_members WHERE family_id = ?', [familyId]);
     res.json(members);
 });
 
 app.post('/api/members', verifyUser, async (req, res) => {
     const { name, color } = req.body;
     const db = await getDb();
+    const familyId = await getUserFamilyId(req.session.userId, db);
+
     const result = await db.run(
-        'INSERT INTO family_members (user_id, name, color) VALUES (?, ?, ?)',
-        [req.session.userId, name, color || '#3b82f6']
+        'INSERT INTO family_members (family_id, name, color) VALUES (?, ?, ?)',
+        [familyId, name, color || '#3b82f6']
     );
     res.json({ id: result.lastID, name, color });
 });
@@ -182,8 +259,16 @@ app.post('/api/members', verifyUser, async (req, res) => {
 app.get('/api/records', verifyUser, async (req, res) => {
     const { member_id } = req.query;
     const db = await getDb();
-    let query = 'SELECT r.*, m.name as member_name, m.color as member_color FROM records r LEFT JOIN family_members m ON r.member_id = m.id WHERE r.user_id = ?';
-    const params = [req.session.userId];
+    const familyId = await getUserFamilyId(req.session.userId, db);
+
+    // Join with members to ensure we only get records for OUR family members
+    let query = `
+        SELECT r.*, m.name as member_name, m.color as member_color 
+        FROM records r 
+        LEFT JOIN family_members m ON r.member_id = m.id 
+        WHERE m.family_id = ?
+    `;
+    const params = [familyId];
 
     if (member_id) {
         query += ' AND r.member_id = ?';
@@ -194,6 +279,7 @@ app.get('/api/records', verifyUser, async (req, res) => {
     const records = await db.all(query, params);
     res.json(records);
 });
+
 
 // --- CALENDAR ROUTES ---
 app.get('/api/calendars', verifyUser, async (req, res) => {
@@ -509,6 +595,53 @@ app.get('/api/stats/suggestions', verifyUser, async (req, res) => {
         descriptions: descriptions.map(d => d.description)
     });
 });
+
+// --- VACCINATION ROUTES ---
+app.get('/api/members/:memberId/vaccinations', verifyUser, async (req, res) => {
+    const db = await getDb();
+    const vaccinations = await db.all('SELECT * FROM vaccinations WHERE member_id = ? ORDER BY date_given DESC', [req.params.memberId]);
+    res.json(vaccinations);
+});
+
+app.post('/api/vaccinations', verifyUser, async (req, res) => {
+    const { member_id, vaccine_name, date_given, next_dose_date, batch_number, notes } = req.body;
+    const db = await getDb();
+    const result = await db.run(
+        'INSERT INTO vaccinations (member_id, vaccine_name, date_given, next_dose_date, batch_number, notes) VALUES (?, ?, ?, ?, ?, ?)',
+        [member_id, vaccine_name, date_given, next_dose_date, batch_number, notes]
+    );
+    res.json({ id: result.lastID, ...req.body });
+});
+
+app.delete('/api/vaccinations/:id', verifyUser, async (req, res) => {
+    const db = await getDb();
+    await db.run('DELETE FROM vaccinations WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Deleted' });
+});
+
+// --- GROWTH ROUTES ---
+app.get('/api/members/:memberId/growth', verifyUser, async (req, res) => {
+    const db = await getDb();
+    const records = await db.all('SELECT * FROM growth_records WHERE member_id = ? ORDER BY date DESC', [req.params.memberId]);
+    res.json(records);
+});
+
+app.post('/api/growth', verifyUser, async (req, res) => {
+    const { member_id, date, height, weight, head_circumference, notes } = req.body;
+    const db = await getDb();
+    const result = await db.run(
+        'INSERT INTO growth_records (member_id, date, height, weight, head_circumference, notes) VALUES (?, ?, ?, ?, ?, ?)',
+        [member_id, date, height, weight, head_circumference, notes]
+    );
+    res.json({ id: result.lastID, ...req.body });
+});
+
+app.delete('/api/growth/:id', verifyUser, async (req, res) => {
+    const db = await getDb();
+    await db.run('DELETE FROM growth_records WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Deleted' });
+});
+
 
 
 // Start Server

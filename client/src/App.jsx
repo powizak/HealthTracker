@@ -11,6 +11,8 @@ import RecordForm from './pages/RecordForm';
 import RecordDetail from './pages/RecordDetail';
 import RecordPrint from './pages/RecordPrint';
 import Calendar from './pages/Calendar';
+import Vaccinations from './pages/Vaccinations';
+import Growth from './pages/Growth';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -48,6 +50,8 @@ function App() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/vaccinations" element={<Vaccinations />} />
+          <Route path="/growth" element={<Growth />} />
         </Route>
       </Routes>
     </Router>
