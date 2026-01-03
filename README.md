@@ -57,7 +57,23 @@ Family health record tracking application.
 ## How to Run on Synology (Docker)
 
 1. Upload the entire project to your Synology NAS.
-2. Create a `.env` file in the same folder as `docker-compose.yml` (or set the variables in the Docker environment settings in Synology UI):
+### Aktualizace na Synology (Troubleshooting)
+Pokud po aktualizaci souborů a provedení **Action > Build** stále vidíte starou verzi aplikace, je to způsobeno agresivním cachováním Docker images.
+
+**Řešení 1: Smazání starých Images (Doporučeno)**
+1. V Container Manageru jděte do záložky **Image**.
+2. Smažte obrazy `healthtracker-health-frontend` a `healthtracker-health-backend`.
+3. Vraťte se do **Project** a zvolte **Action > Build**.
+
+**Řešení 2: Verzování v docker-compose.yml**
+V souboru `docker-compose.yml` můžete explicitně pojmenovat image s novou verzí:
+```yaml
+services:
+  health-frontend:
+    build: ./client
+    image: health-frontend:v1.1  # Změňte verzi při každém update
+```
+Tím donutíte Docker vytvořit úplně nový image.2. Create a `.env` file in the same folder as `docker-compose.yml` (or set the variables in the Docker environment settings in Synology UI):
    ```env
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
