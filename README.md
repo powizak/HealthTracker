@@ -57,6 +57,20 @@ Family health record tracking application.
 ## How to Run on Synology (Docker)
 
 1. Upload the entire project to your Synology NAS.
+
+2. Create a `.env` file in the same folder as `docker-compose.yml` (or set the variables in the Docker environment settings in Synology UI):
+   ```env
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   SESSION_SECRET=some_secret_string
+   ```
+3. Open **Container Manager** (or Docker) on Synology.
+4. In the **Project** section, create a new project and select the path to the uploaded folder (where `docker-compose.yml` is located).
+5. Ensure you select **"Build"** or **"Re-build"** when running/creating the project to load changes (including `.dockerignore`).
+6. The application will run on port **8081** of your NAS (e.g., `http://192.168.1.100:8081`).
+
+**Note:** If you update files, it is best to stop the old project in Container Manager, delete it, and create it again (or choose "Build" in the action menu) to ensure new images are built without errors.
+
 ### Aktualizace na Synology (Troubleshooting)
 Pokud po aktualizaci souborů a provedení **Action > Build** stále vidíte starou verzi aplikace, je to způsobeno agresivním cachováním Docker images.
 
@@ -73,18 +87,7 @@ services:
     build: ./client
     image: health-frontend:v1.1  # Změňte verzi při každém update
 ```
-Tím donutíte Docker vytvořit úplně nový image.2. Create a `.env` file in the same folder as `docker-compose.yml` (or set the variables in the Docker environment settings in Synology UI):
-   ```env
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   SESSION_SECRET=some_secret_string
-   ```
-3. Open **Container Manager** (or Docker) on Synology.
-4. In the **Project** section, create a new project and select the path to the uploaded folder (where `docker-compose.yml` is located).
-5. Ensure you select **"Build"** or **"Re-build"** when running/creating the project to load changes (including `.dockerignore`).
-6. The application will run on port **8081** of your NAS (e.g., `http://192.168.1.100:8081`).
-
-**Note:** If you update files, it is best to stop the old project in Container Manager, delete it, and create it again (or choose "Build" in the action menu) to ensure new images are built without errors.
+Tím donutíte Docker vytvořit úplně nový image.
 
 ## Local Development
 
