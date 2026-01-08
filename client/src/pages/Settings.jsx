@@ -63,7 +63,7 @@ const FamilySettings = () => {
     if (!family) return <p className="text-sm text-slate-500">Načítám rodinu...</p>;
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
+        <div className="glass-card p-6 mb-6">
             <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
                 <Users className="w-5 h-5 mr-2 text-indigo-600" />
                 Správa Rodiny
@@ -136,7 +136,7 @@ const FamilySettings = () => {
                         required
                         className="flex-grow p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none w-full"
                     />
-                    <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shrink-0">
+                    <button type="submit" className="btn-primary px-4 py-2 text-sm shrink-0">
                         Pozvat
                     </button>
                 </form>
@@ -188,7 +188,7 @@ const CalendarSettings = () => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+        <div className="glass-card p-6">
             <h2 className="text-lg font-semibold text-slate-800 mb-4">Google Kalendář</h2>
             <div className="space-y-4">
                 <div>
@@ -218,7 +218,7 @@ const CalendarSettings = () => {
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                        className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
                     >
                         {loading ? 'Ukládám...' : 'Uložit nastavení'}
                     </button>
@@ -263,12 +263,15 @@ const Settings = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-slide-up">
             <div className="flex items-center space-x-4">
-                <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300"
+                >
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-2xl font-bold text-slate-800">Nastavení</h1>
+                <h1 className="text-3xl font-bold text-gradient-primary">Nastavení</h1>
             </div>
 
             {/* Family Settings */}
@@ -277,7 +280,7 @@ const Settings = () => {
             {/* Calendar Settings */}
             <CalendarSettings />
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <div className="glass-card p-6">
                 <h2 className="text-lg font-semibold text-slate-800 mb-4">Správa profilů (Děti/Osoby)</h2>
 
                 <div className="space-y-3 mb-6">
@@ -317,7 +320,7 @@ const Settings = () => {
                                 />
                             ))}
                         </div>
-                        <button type="submit" className="flex items-center justify-center space-x-2 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+                        <button type="submit" className="btn-primary flex items-center justify-center space-x-2 py-2.5 text-sm">
                             <Plus className="w-4 h-4" />
                             <span>Přidat</span>
                         </button>

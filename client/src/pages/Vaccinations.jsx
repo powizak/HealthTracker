@@ -101,23 +101,30 @@ const Vaccinations = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-slide-up">
+            {/* Header */}
             <div className="flex items-center space-x-4">
-                <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300"
+                >
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-2xl font-bold text-slate-800">Očkování</h1>
+                <h1 className="text-3xl font-bold text-gradient-primary flex items-center gap-2">
+                    <Syringe className="w-8 h-8" />
+                    Očkování
+                </h1>
             </div>
 
             {/* Member Tabs */}
-            <div className="flex space-x-2 overflow-x-auto pb-2">
+            <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
                 {members.map(m => (
                     <button
                         key={m.id}
                         onClick={() => setSelectedMember(m)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${selectedMember?.id === m.id
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                        className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${selectedMember?.id === m.id
+                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
+                                : 'glass-card hover:scale-105 text-slate-700 dark:text-slate-300'
                             }`}
                     >
                         {m.name}
@@ -129,26 +136,32 @@ const Vaccinations = () => {
                 <p className="text-center text-slate-500 mt-10">Vyberte člena rodiny</p>
             ) : (
                 <>
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h2 className="font-semibold text-slate-800">Seznam vakcín</h2>
+                    <div className="glass-card overflow-hidden">
+                        <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/30 flex justify-between items-center">
+                            <h2 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <Syringe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                Seznam vakcín
+                            </h2>
                             <button
                                 onClick={showForm ? handleCancel : () => setShowForm(true)}
-                                className="text-sm bg-white border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 text-indigo-600 font-medium"
+                                className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-300 ${showForm
+                                        ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                                        : 'btn-primary px-4 py-2 text-sm flex items-center gap-2'
+                                    }`}
                             >
-                                {showForm ? 'Zavřít' : '+ Přidat'}
+                                {showForm ? 'Zavřít' : (<><Plus className="w-4 h-4" /> Přidat</>)}
                             </button>
                         </div>
 
                         {showForm && (
-                            <form onSubmit={handleSubmit} className="p-4 bg-indigo-50 border-b border-blue-100 space-y-3">
+                            <form onSubmit={handleSubmit} className="p-5 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/10 dark:to-purple-900/10 border-b border-indigo-100 dark:border-indigo-800/30 space-y-4 animate-slide-down">
                                 <h3 className="text-sm font-bold text-indigo-900 mb-2">{editingId ? 'Upravit záznam' : 'Nový záznam'}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 uppercase">Název vakcíny</label>
                                         <input
                                             required
-                                            className="w-full p-2 rounded border border-slate-200 mt-1"
+                                            className="input-field py-2 text-sm mt-1"
                                             value={formData.vaccine_name}
                                             onChange={e => setFormData({ ...formData, vaccine_name: e.target.value })}
                                             placeholder="Např. Hexacima"
@@ -193,11 +206,11 @@ const Vaccinations = () => {
                                     ></textarea>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-medium shadow-sm hover:bg-indigo-700">
+                                    <button type="submit" className="btn-primary flex-1 py-2.5 text-sm">
                                         {editingId ? 'Aktualizovat' : 'Uložit záznam'}
                                     </button>
                                     {editingId && (
-                                        <button type="button" onClick={handleCancel} className="bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50">
+                                        <button type="button" onClick={handleCancel} className="btn-secondary py-2.5 px-6 text-sm">
                                             Zrušit
                                         </button>
                                     )}

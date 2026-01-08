@@ -101,15 +101,18 @@ const RecordForm = () => {
     };
 
     return (
-        <div>
+        <div className="animate-slide-up">
             <div className="flex items-center space-x-4 mb-6">
-                <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300"
+                >
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-2xl font-bold text-slate-800">Nový záznam</h1>
+                <h1 className="text-3xl font-bold text-gradient-primary">Nový záznam</h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-6">
+            <form onSubmit={handleSubmit} className="glass-card p-6 space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Kdo je nemocný?</label>
                     <select
@@ -205,7 +208,7 @@ const RecordForm = () => {
                     </label>
                 </div>
 
-                <button type="submit" className="w-full flex justify-center items-center space-x-2 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-medium shadow-md hover:shadow-lg">
+                <button type="submit" className="btn-primary w-full flex justify-center items-center space-x-2 py-3 text-base">
                     <Save className="w-5 h-5" />
                     <span>Uložit záznam</span>
                 </button>

@@ -107,28 +107,40 @@ const CalendarPage = () => {
     };
 
     return (
-        <div>
+        <div className="animate-slide-up">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full md:hidden">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300 md:hidden"
+                    >
                         <ArrowLeft className="w-6 h-6" />
                     </button>
-                    <h1 className="text-2xl font-bold text-slate-800 capitalize">{monthName}</h1>
+                    <h1 className="text-3xl font-bold text-gradient-primary capitalize">{monthName}</h1>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <button onClick={() => changeMonth(-1)} className="p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-50">
-                        <ChevronLeft className="w-5 h-5 text-slate-600" />
+                    <button
+                        onClick={() => changeMonth(-1)}
+                        className="p-2 glass-card hover:scale-110 transition-all duration-300"
+                    >
+                        <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
-                    <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1 text-sm bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600">
+                    <button
+                        onClick={() => setCurrentDate(new Date())}
+                        className="px-4 py-2 text-sm glass-card hover:scale-105 transition-all duration-300 text-slate-700 dark:text-slate-300 font-semibold"
+                    >
                         Dnes
                     </button>
-                    <button onClick={() => changeMonth(1)} className="p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-50">
-                        <ChevronRight className="w-5 h-5 text-slate-600" />
+                    <button
+                        onClick={() => changeMonth(1)}
+                        className="p-2 glass-card hover:scale-110 transition-all duration-300"
+                    >
+                        <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="glass-card overflow-hidden">
                 {/* Weekdays */}
                 <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200 text-center py-2">
                     {['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'].map(day => (
